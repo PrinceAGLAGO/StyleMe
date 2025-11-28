@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'accueil.dart';
+import 'inscription.dart';
 
 class Connexion extends StatelessWidget {
   const Connexion({super.key});
@@ -13,7 +15,12 @@ class Connexion extends StatelessWidget {
         ),
         actions: [
           TextButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Inscription()),
+              );
+            },
             icon: const Icon(Icons.person_add, color: Colors.white),
             label: const Text(
               "S'inscrire",
@@ -63,7 +70,13 @@ class Connexion extends StatelessWidget {
 
             Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Redirection vers la page d'accueil
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Accueil()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   padding: const EdgeInsets.symmetric(
@@ -72,7 +85,7 @@ class Connexion extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  "Connecter",
+                  "Se connecter",
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
