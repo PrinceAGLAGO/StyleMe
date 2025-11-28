@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'inscription.dart';
 
 class Connexion extends StatelessWidget {
   const Connexion({super.key});
@@ -13,7 +14,12 @@ class Connexion extends StatelessWidget {
         ),
         actions: [
           TextButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Inscription()),
+              );
+            },
             icon: const Icon(Icons.person_add, color: Colors.white),
             label: const Text(
               "S'inscrire",

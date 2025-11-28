@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'connexion.dart';
+import 'inscription.dart';
 
 class Presentation extends StatelessWidget {
   const Presentation({super.key});
@@ -100,7 +101,10 @@ class Presentation extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      // TODO: redirection vers Inscription
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Inscription()),
+                      );
                     },
                     child: const Text(
                       "Inscription",
