@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'accueil.dart';
 import 'inscription.dart';
+import 'navigation_root.dart'; // Assure-toi que NavigationRoot.dart est bien importé
 
 class Connexion extends StatelessWidget {
   const Connexion({super.key});
@@ -71,10 +71,12 @@ class Connexion extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Redirection vers la page d'accueil
+                  // 🔹 Redirection vers NavigationRoot après connexion
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const Accueil()),
+                    MaterialPageRoute(
+                      builder: (context) => const NavigationRoot(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(

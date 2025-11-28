@@ -87,52 +87,15 @@ class _AccueilState extends State<Accueil> {
     setState(() => saved.contains(id) ? saved.remove(id) : saved.add(id));
   }
 
-  int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue.shade900,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            activeIcon: Icon(Icons.crop_free),
-            label: 'Essayer',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            activeIcon: Icon(Icons.favorite),
-            label: 'Favoris',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //  HEADER
+            // HEADER
             Container(
               padding: const EdgeInsets.fromLTRB(20, 40, 20, 25),
               decoration: const BoxDecoration(
@@ -166,7 +129,6 @@ class _AccueilState extends State<Accueil> {
                           ),
                         ],
                       ),
-
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -193,9 +155,7 @@ class _AccueilState extends State<Accueil> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
                   // SEARCH BAR
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -213,7 +173,7 @@ class _AccueilState extends State<Accueil> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               hintText: "Rechercher un look, une marque...",
                               border: InputBorder.none,
                             ),
@@ -225,7 +185,6 @@ class _AccueilState extends State<Accueil> {
                 ],
               ),
             ),
-
             // CATEGORIES
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
@@ -258,9 +217,7 @@ class _AccueilState extends State<Accueil> {
                         child: Text(
                           cat,
                           style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : Colors.grey.shade800,
+                            color: selected ? Colors.white : Colors.grey.shade800,
                           ),
                         ),
                       ),
@@ -269,8 +226,7 @@ class _AccueilState extends State<Accueil> {
                 ),
               ),
             ),
-
-            //  SECTION POUR VOUS
+            // SECTION "Pour vous"
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
               child: Row(
@@ -291,8 +247,7 @@ class _AccueilState extends State<Accueil> {
                 ],
               ),
             ),
-
-            // 🖼️ GRID DES LOOKS
+            // GRID DES LOOKS
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: GridView.builder(
@@ -325,7 +280,6 @@ class _AccueilState extends State<Accueil> {
                     ),
                     child: Column(
                       children: [
-                        // IMAGE + LIKE BTN
                         Expanded(
                           child: Stack(
                             children: [
@@ -339,7 +293,6 @@ class _AccueilState extends State<Accueil> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-
                               Positioned(
                                 top: 8,
                                 right: 8,
@@ -353,12 +306,8 @@ class _AccueilState extends State<Accueil> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
-                                      isLiked
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: isLiked
-                                          ? Colors.pink
-                                          : Colors.black87,
+                                      isLiked ? Icons.favorite : Icons.favorite_border,
+                                      color: isLiked ? Colors.pink : Colors.black87,
                                       size: 18,
                                     ),
                                   ),
@@ -367,16 +316,13 @@ class _AccueilState extends State<Accueil> {
                             ],
                           ),
                         ),
-
-                        // INFO
                         Padding(
                           padding: const EdgeInsets.all(10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     look["brand"],
@@ -394,9 +340,7 @@ class _AccueilState extends State<Accueil> {
                                   ),
                                 ],
                               ),
-
                               const SizedBox(height: 6),
-
                               Text(
                                 look["title"],
                                 style: const TextStyle(
@@ -404,9 +348,7 @@ class _AccueilState extends State<Accueil> {
                                   fontSize: 14,
                                 ),
                               ),
-
                               const SizedBox(height: 3),
-
                               Text(
                                 look["influencer"],
                                 style: const TextStyle(
@@ -414,47 +356,31 @@ class _AccueilState extends State<Accueil> {
                                   color: Colors.grey,
                                 ),
                               ),
-
                               const SizedBox(height: 10),
-
                               Row(
                                 children: [
-                                  // SAVE
                                   Expanded(
                                     child: GestureDetector(
                                       onTap: () => toggleSave(look["id"]),
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 8,
-                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
                                         decoration: BoxDecoration(
-                                          color: isSaved
-                                              ? Colors.pink.shade100
-                                              : Colors.grey.shade200,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
+                                          color: isSaved ? Colors.pink.shade100 : Colors.grey.shade200,
+                                          borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Icon(
-                                              isSaved
-                                                  ? Icons.bookmark
-                                                  : Icons.bookmark_border,
+                                              isSaved ? Icons.bookmark : Icons.bookmark_border,
                                               size: 16,
-                                              color: isSaved
-                                                  ? Colors.pink
-                                                  : Colors.black87,
+                                              color: isSaved ? Colors.pink : Colors.black87,
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
                                               "Sauver",
                                               style: TextStyle(
-                                                color: isSaved
-                                                    ? Colors.pink
-                                                    : Colors.black87,
+                                                color: isSaved ? Colors.pink : Colors.black87,
                                                 fontSize: 11,
                                               ),
                                             ),
@@ -463,10 +389,7 @@ class _AccueilState extends State<Accueil> {
                                       ),
                                     ),
                                   ),
-
                                   const SizedBox(width: 8),
-
-                                  // SHARE
                                   Container(
                                     width: 38,
                                     height: 38,
@@ -491,7 +414,6 @@ class _AccueilState extends State<Accueil> {
                 },
               ),
             ),
-
             const SizedBox(height: 20),
           ],
         ),
