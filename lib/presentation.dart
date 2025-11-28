@@ -74,7 +74,10 @@ class Presentation extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      // TODO: redirection vers login
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Connexion()),
+                      );
                     },
                     child: const Text(
                       "Connexion",

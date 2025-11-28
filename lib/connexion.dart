@@ -8,11 +8,14 @@ class Connexion extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
-        title: const Text("StyleMe", style: TextStyle(color: Colors.white)),
+        title: Row(
+          children: [Image.asset("assets/images/logo.png", height: 30)],
+        ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () {},
-            child: const Text(
+            icon: const Icon(Icons.person_add, color: Colors.white),
+            label: const Text(
               "S'inscrire",
               style: TextStyle(color: Colors.white),
             ),
