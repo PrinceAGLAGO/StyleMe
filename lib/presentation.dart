@@ -10,11 +10,12 @@ class Presentation extends StatelessWidget {
       body: Stack(
         children: [
           // --- IMAGE DE FOND ---
+          
           SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Image.asset(
-              "assets/images/boutique.jpg",
+              "assets/images/image1.png",
               fit: BoxFit.cover,
             ),
           ),
@@ -39,12 +40,6 @@ class Presentation extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo StyleMe
-                Image.asset(
-                  "assets/images/logo.png", // Mets ton logo ici
-                  height: 80,
-                ),
-                const SizedBox(height: 20),
 
                 // Texte "Bienvenue sur"
                 const Text(
@@ -56,15 +51,14 @@ class Presentation extends StatelessWidget {
                   ),
                 ),
 
-                // StyleMe
-                const Text(
-                  "StyleMe",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
+                //Logo StyleMe
+
+                 Image.asset(
+                  "assets/images/logo.png", 
+                  height: 80,
                 ),
+                const SizedBox(height: 20),
+
 
                 const SizedBox(height: 50),
 
