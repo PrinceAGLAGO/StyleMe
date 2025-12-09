@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'accueil.dart';
 import 'connexion.dart';
 
 class Inscription extends StatelessWidget {
@@ -127,7 +128,11 @@ class Inscription extends StatelessWidget {
             // Bouton S'inscrire
             ElevatedButton(
               onPressed: () {
-                // Action d'inscription
+                // Redirection vers la page d'accueil après inscription
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Accueil()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade900,

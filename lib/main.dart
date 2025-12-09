@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
 import 'presentation.dart';
-import 'accueil.dart';
-import 'connexion.dart';
-import 'inscription.dart';
-import 'profil.dart';
-import 'favoris.dart';
-import 'essayer.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,8 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home : const Presentation(),
-      
+      home: const Presentation(),
     );
   }
 }
