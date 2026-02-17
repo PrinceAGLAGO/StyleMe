@@ -86,7 +86,7 @@ class _EssayerState extends State<Essayer> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -120,13 +120,13 @@ class _EssayerState extends State<Essayer> {
               ),
             ),
 
-            // Main Content
+          
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Camera/Upload Section
+
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -141,7 +141,7 @@ class _EssayerState extends State<Essayer> {
                       ),
                       child: Column(
                         children: [
-                          // Image Preview
+
                           AspectRatio(
                             aspectRatio: 3 / 4,
                             child: Container(
@@ -222,12 +222,12 @@ class _EssayerState extends State<Essayer> {
                             ),
                           ),
 
-                          // Action Buttons
+                      
                           Padding(
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
-                                // Camera Button
+
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () =>
@@ -250,7 +250,7 @@ class _EssayerState extends State<Essayer> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                // Gallery Button
+
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () =>
@@ -271,7 +271,7 @@ class _EssayerState extends State<Essayer> {
                                 ),
                                 if (_userPhoto != null) ...[
                                   const SizedBox(width: 8),
-                                  // Reset Button
+
                                   SizedBox(
                                     width: 50,
                                     child: ElevatedButton(
@@ -302,7 +302,7 @@ class _EssayerState extends State<Essayer> {
 
                     const SizedBox(height: 16),
 
-                    // Tabs
+
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
@@ -311,7 +311,7 @@ class _EssayerState extends State<Essayer> {
                       padding: const EdgeInsets.all(4),
                       child: Row(
                         children: [
-                          // Vêtements Tab
+
                           Expanded(
                             child: GestureDetector(
                               onTap: () =>
@@ -346,7 +346,7 @@ class _EssayerState extends State<Essayer> {
                               ),
                             ),
                           ),
-                          // Accessoires Tab
+
                           Expanded(
                             child: GestureDetector(
                               onTap: () =>
@@ -387,14 +387,14 @@ class _EssayerState extends State<Essayer> {
 
                     const SizedBox(height: 16),
 
-                    // Items List
+
                     _activeTab == 'clothes'
                         ? _buildClothingItems()
                         : _buildAccessories(),
 
                     const SizedBox(
                       height: 80,
-                    ), // Space for the bottom action bar
+                    ), 
                   ],
                 ),
               ),
@@ -403,7 +403,7 @@ class _EssayerState extends State<Essayer> {
         ),
       ),
 
-      // Save Actions (floating at bottom)
+    
       bottomSheet: _userPhoto != null && _selectedItem != null
           ? Container(
               padding: const EdgeInsets.all(16),
@@ -420,7 +420,7 @@ class _EssayerState extends State<Essayer> {
               child: SafeArea(
                 child: Row(
                   children: [
-                    // Save Button
+
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: _saveLook,
@@ -437,7 +437,7 @@ class _EssayerState extends State<Essayer> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Share Button
+
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
@@ -445,7 +445,7 @@ class _EssayerState extends State<Essayer> {
                       ),
                       child: IconButton(
                         onPressed: () {
-                          // TODO: Implement share functionality
+
                         },
                         icon: const Icon(Icons.share, color: Colors.grey),
                       ),
@@ -557,7 +557,7 @@ class _EssayerState extends State<Essayer> {
                         ),
                         if (_selectedItem == item['id']) ...[
                           const SizedBox(height: 12),
-                          // Color Picker
+                          
                           Row(
                             children: [
                               const Icon(

@@ -10,7 +10,7 @@ class Presentation extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // --- IMAGE DE FOND ---
+         
           
           SizedBox(
             width: double.infinity,
@@ -21,7 +21,7 @@ class Presentation extends StatelessWidget {
             ),
           ),
 
-          // --- DEGRADÉ VIOLET / ROSE / BLEU ---
+  
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -36,13 +36,13 @@ class Presentation extends StatelessWidget {
             ),
           ),
 
-          // --- CONTENU PRINCIPAL ---
+          
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
 
-                // Texte "Bienvenue sur"
+                
                 const Text(
                   "Bienvenue sur",
                   style: TextStyle(
@@ -52,7 +52,7 @@ class Presentation extends StatelessWidget {
                   ),
                 ),
 
-                //Logo StyleMe
+             
 
                  Image.asset(
                   "assets/images/logo.png", 
@@ -63,7 +63,7 @@ class Presentation extends StatelessWidget {
 
                 const SizedBox(height: 50),
 
-                // --- BOUTON CONNEXION ---
+      
                 SizedBox(
                   width: 200,
                   child: ElevatedButton(
@@ -89,7 +89,7 @@ class Presentation extends StatelessWidget {
 
                 const SizedBox(height: 15),
 
-                // --- BOUTON INSCRIPTION ---
+                
                 SizedBox(
                   width: 200,
                   child: ElevatedButton(

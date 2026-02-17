@@ -95,7 +95,6 @@ class _AccueilState extends State<Accueil> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER
             Container(
               padding: const EdgeInsets.fromLTRB(20, 40, 20, 25),
               decoration: const BoxDecoration(
@@ -156,7 +155,7 @@ class _AccueilState extends State<Accueil> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // SEARCH BAR
+
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
@@ -185,7 +184,7 @@ class _AccueilState extends State<Accueil> {
                 ],
               ),
             ),
-            // CATEGORIES
+            
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
               decoration: const BoxDecoration(
@@ -226,7 +225,7 @@ class _AccueilState extends State<Accueil> {
                 ),
               ),
             ),
-            // SECTION "Pour vous"
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
               child: Row(
@@ -247,7 +246,7 @@ class _AccueilState extends State<Accueil> {
                 ],
               ),
             ),
-            // GRID DES LOOKS
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: GridView.builder(

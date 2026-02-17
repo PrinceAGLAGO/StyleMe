@@ -9,8 +9,8 @@ class Favoris extends StatefulWidget {
 }
 
 class _FavorisPageState extends State<Favoris> {
-  String viewMode = "grid"; // grid or list
-  String activeTab = "collections"; // collections or items
+  String viewMode = "grid"; 
+  String activeTab = "collections"; 
 
   bool showNewCollection = false;
   final TextEditingController newCollectionController = TextEditingController();
@@ -106,7 +106,7 @@ class _FavorisPageState extends State<Favoris> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
 
-      // HEADER
+
       body: Column(
         children: [
           Container(
@@ -125,7 +125,7 @@ class _FavorisPageState extends State<Favoris> {
             ),
             child: Column(
               children: [
-                // TITLE + VIEW MODE
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -168,7 +168,7 @@ class _FavorisPageState extends State<Favoris> {
                   ],
                 ),
 
-                // TABS
+            
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -227,7 +227,7 @@ class _FavorisPageState extends State<Favoris> {
             ),
           ),
 
-          // CONTENT
+
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -241,9 +241,7 @@ class _FavorisPageState extends State<Favoris> {
     );
   }
 
-  // -------------------------------------
-  // COLLECTION VIEW
-  // -------------------------------------
+
   Widget buildCollections() {
     return Column(
       children: [
@@ -267,7 +265,7 @@ class _FavorisPageState extends State<Favoris> {
         ),
         const SizedBox(height: 10),
 
-        // GRID OF COLLECTIONS
+       
         Expanded(
           child: GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -348,9 +346,7 @@ class _FavorisPageState extends State<Favoris> {
     );
   }
 
-  // -------------------------------------
-  // ITEMS VIEW
-  // -------------------------------------
+
   Widget buildItems() {
     return Column(
       children: [
@@ -461,9 +457,7 @@ class _FavorisPageState extends State<Favoris> {
     );
   }
 
-  // -------------------------------------
-  // DIALOG FOR NEW COLLECTION
-  // -------------------------------------
+
   void showCreateCollectionDialog() {
     showDialog(
       context: context,

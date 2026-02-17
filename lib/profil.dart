@@ -39,36 +39,36 @@ class _ProfilState extends State<Profil> {
     );
   }
 
-  // -------------------- HEADER --------------------
+  
 
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 30),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple, Colors.pink],
-        ),
+        gradient: LinearGradient(colors: [Colors.purple, Colors.pink]),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Mon Profil",
-                  style: TextStyle(color: Colors.white, fontSize: 26)),
+              const Text(
+                "Mon Profil",
+                style: TextStyle(color: Colors.white, fontSize: 26),
+              ),
               Row(
                 children: [
                   _iconBtn(Icons.notifications),
                   const SizedBox(width: 10),
                   _iconBtn(Icons.settings),
                 ],
-              )
+              ),
             ],
           ),
 
           const SizedBox(height: 20),
 
-          // Profile card
+          
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -79,7 +79,6 @@ class _ProfilState extends State<Profil> {
               children: [
                 Row(
                   children: [
-                    // Avatar
                     Container(
                       height: 60,
                       width: 60,
@@ -95,18 +94,23 @@ class _ProfilState extends State<Profil> {
 
                     const SizedBox(width: 15),
 
-                    // Infos
+                   
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
-                          Text("Prince AGLAGO",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20)),
+                          Text(
+                            "Prince AGLAGO",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
                           SizedBox(height: 2),
-                          Text("prince.aglago@gmail.com",
-                              style: TextStyle(
-                                  color: Colors.white70, fontSize: 13)),
+                          Text(
+                            "prince.aglago@gmail.com",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -121,7 +125,7 @@ class _ProfilState extends State<Profil> {
                         ),
                         child: const Icon(Icons.edit, color: Colors.white),
                       ),
-                    )
+                    ),
                   ],
                 ),
 
@@ -132,12 +136,16 @@ class _ProfilState extends State<Profil> {
                   children: const [
                     _stat(icon: Icons.favorite, value: "45", label: "Looks"),
                     _stat(icon: Icons.star, value: "4", label: "Collections"),
-                    _stat(icon: Icons.trending_up, value: "128", label: "Essayages"),
+                    _stat(
+                      icon: Icons.trending_up,
+                      value: "128",
+                      label: "Essayages",
+                    ),
                   ],
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -157,8 +165,10 @@ class _ProfilState extends State<Profil> {
         _infoRow("Hauteur", "165 cm"),
 
         const SizedBox(height: 10),
-        const Text("Couleurs préférées",
-            style: TextStyle(fontSize: 14, color: Colors.grey)),
+        const Text(
+          "Couleurs préférées",
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
         const SizedBox(height: 8),
 
         Row(
@@ -169,7 +179,7 @@ class _ProfilState extends State<Profil> {
             const SizedBox(width: 6),
             _colorCircle(Colors.blue),
           ],
-        )
+        ),
       ],
     );
   }
@@ -182,25 +192,29 @@ class _ProfilState extends State<Profil> {
       "Casual",
       "Sportif",
       "Bohème",
-      "Minimaliste"
+      "Minimaliste",
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Préférences de style",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          "Préférences de style",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
 
         const SizedBox(height: 15),
 
         Wrap(
           spacing: 8,
           children: styles
-              .map((s) => Chip(
-                    label: Text(s),
-                    backgroundColor: Colors.pink.shade50,
-                    labelStyle: const TextStyle(color: Colors.pink),
-                  ))
+              .map(
+                (s) => Chip(
+                  label: Text(s),
+                  backgroundColor: Colors.pink.shade50,
+                  labelStyle: const TextStyle(color: Colors.pink),
+                ),
+              )
               .toList(),
         ),
 
@@ -210,11 +224,12 @@ class _ProfilState extends State<Profil> {
           onPressed: () {},
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Colors.grey),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: const Text("+ Ajouter un style"),
-        )
+        ),
       ],
     );
   }
@@ -225,21 +240,18 @@ class _ProfilState extends State<Profil> {
     final List recommendations = [
       {
         "title": "Style adapté à votre morphologie",
-        "image":
-            "https://images.unsplash.com/photo-1759754112225-8b7d43ea9716",
-        "match": 95
+        "image": "https://images.unsplash.com/photo-1759754112225-8b7d43ea9716",
+        "match": 95,
       },
       {
         "title": "Basé sur vos préférences",
-        "image":
-            "https://images.unsplash.com/photo-1586024452802-86e0d084a4f9",
-        "match": 92
+        "image": "https://images.unsplash.com/photo-1586024452802-86e0d084a4f9",
+        "match": 92,
       },
       {
         "title": "Tendance du moment",
-        "image":
-            "https://images.unsplash.com/photo-1632693217835-b482d9ca9ba0",
-        "match": 88
+        "image": "https://images.unsplash.com/photo-1632693217835-b482d9ca9ba0",
+        "match": 88,
       },
     ];
 
@@ -254,9 +266,10 @@ class _ProfilState extends State<Profil> {
                 children: [
                   Icon(Icons.emoji_events, color: Colors.pink),
                   SizedBox(width: 8),
-                  Text("Recommandations pour vous",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Recommandations pour vous",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               Text("Voir tout", style: TextStyle(color: Colors.pink)),
@@ -274,26 +287,35 @@ class _ProfilState extends State<Profil> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black12, blurRadius: 5, offset: Offset(0, 2))
+                  color: Colors.black12,
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
+                ),
               ],
             ),
             child: Row(
               children: [
                 ClipRRect(
-                  borderRadius:
-                      const BorderRadius.horizontal(left: Radius.circular(16)),
-                  child: Image.network(rec["image"],
-                      width: 90, height: 90, fit: BoxFit.cover),
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(16),
+                  ),
+                  child: Image.network(
+                    rec["image"],
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 Expanded(
                   child: ListTile(
                     title: Text(rec["title"]),
-                    subtitle: Text("${rec["match"]}% compatible",
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey)),
+                    subtitle: Text(
+                      "${rec["match"]}% compatible",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                   ),
-                )
+                ),
               ],
             ),
           );
@@ -319,10 +341,12 @@ class _ProfilState extends State<Profil> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Notifications"),
-                Text("Nouvelles tendances et looks",
-                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  "Nouvelles tendances et looks",
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
-            )
+            ),
           ],
         ),
         Switch(
@@ -333,7 +357,7 @@ class _ProfilState extends State<Profil> {
               notificationsEnabled = v;
             });
           },
-        )
+        ),
       ],
     );
   }
@@ -349,16 +373,18 @@ class _ProfilState extends State<Profil> {
 
     return Column(
       children: menu
-          .map((item) => Column(
-                children: [
-                  ListTile(
-                    leading: Icon(item["icon"] as IconData, color: Colors.grey),
-                    title: Text(item["label"] as String),
-                    trailing: const Icon(Icons.chevron_right),
-                  ),
-                  const Divider(height: 1),
-                ],
-              ))
+          .map(
+            (item) => Column(
+              children: [
+                ListTile(
+                  leading: Icon(item["icon"] as IconData, color: Colors.grey),
+                  title: Text(item["label"] as String),
+                  trailing: const Icon(Icons.chevron_right),
+                ),
+                const Divider(height: 1),
+              ],
+            ),
+          )
           .toList(),
     );
   }
@@ -375,8 +401,10 @@ class _ProfilState extends State<Profil> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Text("Se déconnecter",
-            style: TextStyle(color: Colors.red, fontSize: 16)),
+        child: const Text(
+          "Se déconnecter",
+          style: TextStyle(color: Colors.red, fontSize: 16),
+        ),
       ),
     );
   }
@@ -385,25 +413,31 @@ class _ProfilState extends State<Profil> {
 
   void _openEditModal() {
     TextEditingController name = TextEditingController(text: "Marie Dubois");
-    TextEditingController email =
-        TextEditingController(text: "marie.dubois@email.com");
+    TextEditingController email = TextEditingController(
+      text: "marie.dubois@email.com",
+    );
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(26)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom, top: 20, left: 16, right: 16),
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20,
+            left: 16,
+            right: 16,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Modifier le profil",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                "Modifier le profil",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
 
               TextField(
@@ -429,7 +463,9 @@ class _ProfilState extends State<Profil> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink,
+                      ),
                       onPressed: () {
                         Navigator.pop(context);
                       },
@@ -454,11 +490,12 @@ class _ProfilState extends State<Profil> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))
-          ]),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+        ],
+      ),
       child: child,
     );
   }
@@ -467,13 +504,18 @@ class _ProfilState extends State<Profil> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-          color: Colors.white24, borderRadius: BorderRadius.circular(50)),
+        color: Colors.white24,
+        borderRadius: BorderRadius.circular(50),
+      ),
       child: Icon(icon, color: Colors.white),
     );
   }
 
-  Widget _colorCircle(Color c) =>
-      Container(width: 25, height: 25, decoration: BoxDecoration(color: c, shape: BoxShape.circle));
+  Widget _colorCircle(Color c) => Container(
+    width: 25,
+    height: 25,
+    decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+  );
 
   Widget _infoRow(String label, String value) {
     return Row(
@@ -493,11 +535,7 @@ class _stat extends StatelessWidget {
   final String value;
   final String label;
 
-  const _stat({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
+  const _stat({required this.icon, required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -506,7 +544,10 @@ class _stat extends StatelessWidget {
         Icon(icon, size: 22, color: Colors.white),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(color: Colors.white, fontSize: 18)),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+        ),
       ],
     );
   }
@@ -516,8 +557,10 @@ Widget _titleRow(String title, String action) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
       Text(action, style: const TextStyle(color: Colors.pink, fontSize: 14)),
     ],
   );
