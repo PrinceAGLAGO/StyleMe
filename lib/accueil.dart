@@ -1,422 +1,245 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/looks_provider.dart';
+import 'providers/user_provider.dart';
 
-class Accueil extends StatefulWidget {
+class Accueil extends StatelessWidget {
   const Accueil({super.key});
 
   @override
-  State<Accueil> createState() => _AccueilState();
-}
-
-class _AccueilState extends State<Accueil> {
-  String selectedCategory = "Tout";
-
-  List<String> categories = [
-    "Tout",
-    "Femme",
-    "Homme",
-    "Accessoires",
-    "Chaussures",
-    "Sacs",
-  ];
-
-  List<Map<String, dynamic>> trendingLooks = [
-    {
-      "id": 1,
-      "image":
-          "https://images.unsplash.com/photo-1656504450814-398cf348c038?auto=format&fit=crop&w=1080&q=80",
-      "brand": "Zara",
-      "title": "Look Urbain Chic",
-      "likes": 2453,
-      "influencer": "@emma_style",
-    },
-    {
-      "id": 2,
-      "image":
-          "https://images.unsplash.com/photo-1632693217835-b482d9ca9ba0?auto=format&fit=crop&w=1080&q=80",
-      "brand": "H&M",
-      "title": "Street Style",
-      "likes": 1892,
-      "influencer": "@marie_fashion",
-    },
-    {
-      "id": 3,
-      "image":
-          "https://images.unsplash.com/photo-1562182856-e39faab686d7?auto=format&fit=crop&w=1080&q=80",
-      "brand": "Mango",
-      "title": "Élégance Moderne",
-      "likes": 3201,
-      "influencer": "@julie_couture",
-    },
-    {
-      "id": 4,
-      "image":
-          "https://images.unsplash.com/photo-1651083018668-33a9dc339579?auto=format&fit=crop&w=1080&q=80",
-      "brand": "Pull&Bear",
-      "title": "Casual Chic",
-      "likes": 1567,
-      "influencer": "@sarah_mode",
-    },
-    {
-      "id": 5,
-      "image":
-          "https://images.unsplash.com/photo-1759754112225-8b7d43ea9716?auto=format&fit=crop&w=1080&q=80",
-      "brand": "Bershka",
-      "title": "Tendance 2024",
-      "likes": 2891,
-      "influencer": "@lisa_trends",
-    },
-    {
-      "id": 6,
-      "image":
-          "https://images.unsplash.com/photo-1586024452802-86e0d084a4f9?auto=format&fit=crop&w=1080&q=80",
-      "brand": "Stradivarius",
-      "title": "Summer Vibes",
-      "likes": 2104,
-      "influencer": "@chloe_style",
-    },
-  ];
-
-  List<int> liked = [];
-  List<int> saved = [];
-
-  void toggleLike(int id) {
-    setState(() => liked.contains(id) ? liked.remove(id) : liked.add(id));
-  }
-
-  void toggleSave(int id) {
-    setState(() => saved.contains(id) ? saved.remove(id) : saved.add(id));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 40, 20, 25),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFFF4F9A), Color(0xFF8B5CF6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer2<LooksProvider, UserProvider>(
+      builder: (context, looksProvider, userProvider, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 25),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "StyleMe",
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Découvre",
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
                           ),
-                          SizedBox(height: 3),
-                          Text(
-                            "Découvrez les tendances",
-                            style: TextStyle(color: Colors.white70),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.search, color: Colors.grey),
                           ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Row(
-                          children: const [
-                            Icon(
-                              Icons.trending_up,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              "Trending",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        height: 40,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: looksProvider.categories.length,
+                          itemBuilder: (context, index) {
+                            final category = looksProvider.categories[index];
+                            final isSelected = looksProvider.selectedCategory == category;
+                            
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: FilterChip(
+                                label: Text(category),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  looksProvider.selectCategory(category);
+                                },
+                                backgroundColor: Colors.grey[200],
+                                selectedColor: Colors.orange,
+                                labelStyle: TextStyle(
+                                  color: isSelected ? Colors.white : Colors.black,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.search,
-                          size: 22,
-                          color: Colors.grey.shade500,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              hintText: "Rechercher un look, une marque...",
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ],
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Looks Tendances",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
                     ),
                   ),
-                ],
-              ),
-            ),
-            
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey, width: 0.3),
                 ),
-              ),
-              child: SizedBox(
-                height: 40,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (_, i) {
-                    final cat = categories[i];
-                    final selected = (cat == selectedCategory);
-
-                    return GestureDetector(
-                      onTap: () => setState(() => selectedCategory = cat),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: selected ? Colors.pink : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          cat,
-                          style: TextStyle(
-                            color: selected ? Colors.white : Colors.grey.shade800,
+                const SizedBox(height: 15),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: 0.75,
+                  ),
+                  itemCount: looksProvider.filteredLooks.length,
+                  itemBuilder: (context, index) {
+                    final look = looksProvider.filteredLooks[index];
+                    final isLiked = userProvider.favoris.contains(look["id"]);
+                    
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                                  child: Image.network(
+                                    look["image"],
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: Icon(Icons.image_not_supported, color: Colors.grey),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (isLiked) {
+                                        userProvider.removeFromFavoris(look["id"]);
+                                      } else {
+                                        userProvider.addToFavoris(look["id"]);
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        isLiked ? Icons.favorite : Icons.favorite_border,
+                                        color: isLiked ? Colors.red : Colors.grey,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        look["brand"],
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        look["title"],
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.favorite, color: Colors.red, size: 14),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "${look["likes"]}",
+                                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          looksProvider.incrementLikes(look["id"]);
+                                        },
+                                        child: const Icon(Icons.share, size: 16, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
                 ),
-              ),
+                const SizedBox(height: 20),
+              ],
             ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    "Pour vous",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "Voir tout",
-                    style: TextStyle(
-                      color: Colors.pink,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: GridView.builder(
-                itemCount: trendingLooks.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.70,
-                ),
-                itemBuilder: (_, i) {
-                  final look = trendingLooks[i];
-                  final isLiked = liked.contains(look["id"]);
-                  final isSaved = saved.contains(look["id"]);
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.grey.shade200),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12.withOpacity(0.05),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(18),
-                                ),
-                                child: Image.network(
-                                  look["image"],
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: GestureDetector(
-                                  onTap: () => toggleLike(look["id"]),
-                                  child: Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.8),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      isLiked ? Icons.favorite : Icons.favorite_border,
-                                      color: isLiked ? Colors.pink : Colors.black87,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    look["brand"],
-                                    style: const TextStyle(
-                                      color: Colors.pink,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                  Text(
-                                    look["likes"].toString(),
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                look["title"],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                look["influencer"],
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () => toggleSave(look["id"]),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
-                                        decoration: BoxDecoration(
-                                          color: isSaved ? Colors.pink.shade100 : Colors.grey.shade200,
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              isSaved ? Icons.bookmark : Icons.bookmark_border,
-                                              size: 16,
-                                              color: isSaved ? Colors.pink : Colors.black87,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              "Sauver",
-                                              style: TextStyle(
-                                                color: isSaved ? Colors.pink : Colors.black87,
-                                                fontSize: 11,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    width: 38,
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.share,
-                                      size: 18,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

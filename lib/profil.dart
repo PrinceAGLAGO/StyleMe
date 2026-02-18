@@ -1,47 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'providers/authentication_provider.dart';
+import 'providers/user_provider.dart';
+import 'connexion.dart';
 
-class Profil extends StatefulWidget {
+class Profil extends StatelessWidget {
   const Profil({super.key});
 
   @override
-  State<Profil> createState() => _ProfilState();
-}
-
-class _ProfilState extends State<Profil> {
-  bool notificationsEnabled = true;
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xfff5f5f5),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(),
+    return Consumer2<AuthenticationProvider, UserProvider>(
+      builder: (context, authProvider, userProvider, child) {
+        final user = authProvider.user;
+        final userData = userProvider.userData;
+        final favorisCount = userProvider.favoris.length;
+        final historiqueCount = userProvider.historiqueLooks.length;
 
-            const SizedBox(height: 20),
-            _card(child: _buildMorphology()),
-            const SizedBox(height: 20),
-            _card(child: _buildStylePreferences()),
-            const SizedBox(height: 20),
-            _buildRecommendations(),
-            const SizedBox(height: 20),
-            _card(child: _buildNotifications()),
-            const SizedBox(height: 20),
-            _card(child: _buildMenu()),
-
-            const SizedBox(height: 20),
-            _buildLogoutButton(),
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
+        return Scaffold(
+          backgroundColor: const Color(0xfff5f5f5),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(context, user, userData, authProvider, favorisCount, historiqueCount, userProvider),
+                const SizedBox(height: 20),
+                _card(child: _buildUserInfo(context, userData, user)),
+                const SizedBox(height: 20),
+                _card(child: _buildMorphology(context, userProvider)),
+                const SizedBox(height: 20),
+                _card(child: _buildStylePreferences(context, userProvider)),
+                const SizedBox(height: 20),
+                _buildRecommendations(context, userProvider),
+                const SizedBox(height: 20),
+                _card(child: _buildNotifications(userProvider)),
+                const SizedBox(height: 20),
+                _card(child: _buildMenu(context, authProvider, userProvider)),
+                const SizedBox(height: 20),
+                _buildLogoutButton(context, authProvider),
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  
-
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, User? user, Map<String, dynamic> userData, AuthenticationProvider authProvider, int favorisCount, int historiqueCount, UserProvider userProvider) {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 30),
       decoration: const BoxDecoration(
@@ -65,10 +71,7 @@ class _ProfilState extends State<Profil> {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
-          
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -79,48 +82,80 @@ class _ProfilState extends State<Profil> {
               children: [
                 Row(
                   children: [
-                    Container(
-                      height: 60,
-                      width: 60,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Colors.pink, Colors.purple],
+                    GestureDetector(
+                      onTap: () => _pickImage(context, userProvider),
+                      child: Container(
+                        height: 60,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [Colors.pink, Colors.purple],
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Stack(
+                          children: [
+                            userData['photoUrl'] != null && userData['photoUrl'].toString().isNotEmpty
+                                ? ClipOval(
+                                    child: Image.network(
+                                      userData['photoUrl'].toString(),
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Text("👤", style: TextStyle(fontSize: 28));
+                                      },
+                                    ),
+                                  )
+                                : const Text("👤", style: TextStyle(fontSize: 28)),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                width: 20,
+                                height: 20,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.camera_alt, size: 12, color: Colors.pink),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      alignment: Alignment.center,
-                      child: const Text("👤", style: TextStyle(fontSize: 28)),
                     ),
-
                     const SizedBox(width: 15),
-
-                   
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "Prince AGLAGO",
-                            style: TextStyle(color: Colors.white, fontSize: 20),
+                            userData['nom']?.toString() ?? user?.displayName ?? 'Utilisateur',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 5),
                           Text(
-                            "prince.aglago@gmail.com",
+                            userData['email']?.toString() ?? user?.email ?? '',
                             style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
-
                     InkWell(
-                      onTap: _openEditModal,
+                      onTap: () => _openEditModal(context, userData, user, userProvider),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white24,
+                          color: Colors.white.withOpacity(0.24),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.edit, color: Colors.white),
@@ -128,19 +163,13 @@ class _ProfilState extends State<Profil> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 15),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: const [
-                    _stat(icon: Icons.favorite, value: "45", label: "Looks"),
+                  children: [
+                    _stat(icon: Icons.favorite, value: "$favorisCount", label: "Looks"),
                     _stat(icon: Icons.star, value: "4", label: "Collections"),
-                    _stat(
-                      icon: Icons.trending_up,
-                      value: "128",
-                      label: "Essayages",
-                    ),
+                    _stat(icon: Icons.trending_up, value: "$historiqueCount", label: "Essayages"),
                   ],
                 ),
               ],
@@ -151,26 +180,59 @@ class _ProfilState extends State<Profil> {
     );
   }
 
-  // -------------------- MORPHOLOGY --------------------
-
-  Widget _buildMorphology() {
+  Widget _buildUserInfo(BuildContext context, Map<String, dynamic> userData, User? user) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _titleRow("Information Morphologie", "Modifier"),
-        _infoRow("Morphologie", "Sablier (H)"),
+        const Text(
+          "Informations personnelles",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 15),
+        _infoRow("Nom complet", userData['nom']?.toString() ?? user?.displayName ?? 'Non renseigné'),
+        _infoRow("Email", userData['email']?.toString() ?? user?.email ?? 'Non renseigné'),
+        _infoRow("Taille", "${userData['taille'] ?? 170} cm"),
+        _infoRow("Poids", "${userData['poids'] ?? 65} kg"),
+        _infoRow("Couleur de peau", userData['couleurPeau']?.toString() ?? 'Moyenne'),
+      ],
+    );
+  }
+
+  Widget _buildMorphology(BuildContext context, UserProvider userProvider) {
+    final morphologies = ['Standard', 'Mince', 'Athlétique', 'Ronde'];
+    final selectedMorphology = userProvider.userData['morphologie']?.toString() ?? 'Standard';
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Information Morphologie",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            GestureDetector(
+              onTap: () => _openMorphologyEditModal(context, userProvider),
+              child: const Text(
+                "Modifier",
+                style: TextStyle(color: Colors.pink, fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        _infoRow("Morphologie", selectedMorphology),
         const Divider(),
         _infoRow("Taille", "M / 38-40"),
         const Divider(),
-        _infoRow("Hauteur", "165 cm"),
-
+        _infoRow("Hauteur", "${userProvider.userData['taille'] ?? 170} cm"),
         const SizedBox(height: 10),
         const Text(
           "Couleurs préférées",
           style: TextStyle(fontSize: 14, color: Colors.grey),
         ),
         const SizedBox(height: 8),
-
         Row(
           children: [
             _colorCircle(Colors.pink),
@@ -180,21 +242,31 @@ class _ProfilState extends State<Profil> {
             _colorCircle(Colors.blue),
           ],
         ),
+        const SizedBox(height: 15),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: morphologies.map((morphologie) {
+            final isSelected = selectedMorphology == morphologie;
+            return FilterChip(
+              label: Text(morphologie),
+              selected: isSelected,
+              onSelected: (selected) {
+                userProvider.updateMorphologie(morphologie);
+              },
+              backgroundColor: Colors.grey[200],
+              selectedColor: Colors.orange,
+            );
+          }).toList(),
+        ),
       ],
     );
   }
 
-  // -------------------- STYLE PREFERENCES --------------------
-
-  Widget _buildStylePreferences() {
-    final List<String> styles = [
-      "Élégant",
-      "Casual",
-      "Sportif",
-      "Bohème",
-      "Minimaliste",
-    ];
-
+  Widget _buildStylePreferences(BuildContext context, UserProvider userProvider) {
+    final preferences = List<String>.from(userProvider.userData['stylePreferences'] as List? ?? []);
+    final allStyles = ['Casual', 'Chic', 'Sport', 'Élégant', 'Streetwear', 'Bohème'];
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -202,26 +274,50 @@ class _ProfilState extends State<Profil> {
           "Préférences de style",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-
         const SizedBox(height: 15),
-
         Wrap(
-          spacing: 8,
-          children: styles
-              .map(
-                (s) => Chip(
-                  label: Text(s),
-                  backgroundColor: Colors.pink.shade50,
-                  labelStyle: const TextStyle(color: Colors.pink),
-                ),
-              )
-              .toList(),
+          spacing: 10,
+          runSpacing: 10,
+          children: allStyles.map((style) {
+            final isSelected = preferences.contains(style);
+            return FilterChip(
+              label: Text(style),
+              selected: isSelected,
+              onSelected: (selected) {
+                final newPreferences = List<String>.from(preferences);
+                if (selected) {
+                  newPreferences.add(style);
+                } else {
+                  newPreferences.remove(style);
+                }
+                userProvider.updateStylePreferences(newPreferences);
+              },
+              backgroundColor: Colors.grey[200],
+              selectedColor: Colors.orange,
+            );
+          }).toList(),
         ),
-
         const SizedBox(height: 15),
-
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: preferences.where((style) => !allStyles.contains(style)).map((customStyle) {
+            return FilterChip(
+              label: Text(customStyle),
+              selected: true,
+              onSelected: (selected) {
+                final newPreferences = List<String>.from(preferences);
+                newPreferences.remove(customStyle);
+                userProvider.updateStylePreferences(newPreferences);
+              },
+              backgroundColor: Colors.orange[100],
+              selectedColor: Colors.orange,
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 15),
         OutlinedButton(
-          onPressed: () {},
+          onPressed: () => _showAddStyleDialog(context, userProvider),
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Colors.grey),
             shape: RoundedRectangleBorder(
@@ -234,24 +330,28 @@ class _ProfilState extends State<Profil> {
     );
   }
 
-  // -------------------- RECOMMENDATIONS --------------------
-
-  Widget _buildRecommendations() {
+  Widget _buildRecommendations(BuildContext context, UserProvider userProvider) {
     final List recommendations = [
       {
+        "id": "1",
         "title": "Style adapté à votre morphologie",
         "image": "https://images.unsplash.com/photo-1759754112225-8b7d43ea9716",
         "match": 95,
+        "description": "Looks parfaits pour votre morphologie en sablier",
       },
       {
+        "id": "2",
         "title": "Basé sur vos préférences",
         "image": "https://images.unsplash.com/photo-1586024452802-86e0d084a4f9",
         "match": 92,
+        "description": "Sélectionnés selon vos goûts personnels",
       },
       {
+        "id": "3",
         "title": "Tendance du moment",
         "image": "https://images.unsplash.com/photo-1632693217835-b482d9ca9ba0",
         "match": 88,
+        "description": "Les dernières tendances de la saison",
       },
     ];
 
@@ -276,47 +376,48 @@ class _ProfilState extends State<Profil> {
             ],
           ),
         ),
-
         const SizedBox(height: 10),
-
         ...recommendations.map((rec) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(16),
+          return GestureDetector(
+            onTap: () => _showRecommendationDetails(context, rec, userProvider),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10, left: 16, right: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
                   ),
-                  child: Image.network(
-                    rec["image"],
-                    width: 90,
-                    height: 90,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    title: Text(rec["title"]),
-                    subtitle: Text(
-                      "${rec["match"]}% compatible",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ],
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(
+                      left: Radius.circular(16),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    child: Image.network(
+                      rec["image"],
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: ListTile(
+                      title: Text(rec["title"]),
+                      subtitle: Text(
+                        "${rec["match"]}% compatible",
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }).toList(),
@@ -324,9 +425,9 @@ class _ProfilState extends State<Profil> {
     );
   }
 
-  // -------------------- NOTIFICATIONS --------------------
-
-  Widget _buildNotifications() {
+  Widget _buildNotifications(UserProvider userProvider) {
+    final notificationsEnabled = userProvider.userData['notificationsEnabled'] as bool? ?? true;
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -353,69 +454,92 @@ class _ProfilState extends State<Profil> {
           value: notificationsEnabled,
           activeColor: Colors.pink,
           onChanged: (v) {
-            setState(() {
-              notificationsEnabled = v;
-            });
+            userProvider.toggleNotifications();
           },
         ),
       ],
     );
   }
 
-  // -------------------- MENU --------------------
-
-  Widget _buildMenu() {
-    final List<Map<String, dynamic>> menu = [
-      {"label": "Historique des essayages", "icon": Icons.trending_up},
-      {"label": "Paramètres du compte", "icon": Icons.settings},
-      {"label": "Aide et support", "icon": Icons.help_outline},
-    ];
-
+  Widget _buildMenu(BuildContext context, AuthenticationProvider authProvider, UserProvider userProvider) {
     return Column(
-      children: menu
-          .map(
-            (item) => Column(
-              children: [
-                ListTile(
-                  leading: Icon(item["icon"] as IconData, color: Colors.grey),
-                  title: Text(item["label"] as String),
-                  trailing: const Icon(Icons.chevron_right),
-                ),
-                const Divider(height: 1),
-              ],
-            ),
-          )
-          .toList(),
+      children: [
+        ListTile(
+          leading: const Icon(Icons.trending_up, color: Colors.grey),
+          title: const Text("Historique des essayages"),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _showHistorique(context, userProvider),
+        ),
+        const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.settings, color: Colors.grey),
+          title: const Text("Paramètres du compte"),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _showSettings(context, authProvider),
+        ),
+        const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.help_outline, color: Colors.grey),
+          title: const Text("Aide et support"),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _showHelp(context),
+        ),
+        const Divider(height: 1),
+      ],
     );
   }
 
-  // -------------------- LOGOUT BUTTON --------------------
-
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(BuildContext context, AuthenticationProvider authProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        height: 55,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Text(
-          "Se déconnecter",
-          style: TextStyle(color: Colors.red, fontSize: 16),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () async {
+            await authProvider.signOut();
+            if (context.mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const Connexion()),
+                (route) => false,
+              );
+            }
+          },
+          child: Container(
+            height: 55,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Text(
+              "Se déconnecter",
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  // -------------------- EDIT PROFILE MODAL --------------------
+  Future<void> _pickImage(BuildContext context, UserProvider userProvider) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      userProvider.setPhotoUrl(image.path);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Photo de profil mise à jour!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
 
-  void _openEditModal() {
-    TextEditingController name = TextEditingController(text: "Marie Dubois");
-    TextEditingController email = TextEditingController(
-      text: "marie.dubois@email.com",
-    );
+  void _openEditModal(BuildContext context, Map<String, dynamic> userData, User? user, UserProvider userProvider) {
+    TextEditingController name = TextEditingController(text: userData['nom']?.toString() ?? user?.displayName ?? '');
+    TextEditingController email = TextEditingController(text: userData['email']?.toString() ?? user?.email ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -439,19 +563,16 @@ class _ProfilState extends State<Profil> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-
               TextField(
                 controller: name,
                 decoration: const InputDecoration(labelText: "Nom complet"),
               ),
               const SizedBox(height: 10),
-
               TextField(
                 controller: email,
                 decoration: const InputDecoration(labelText: "Email"),
               ),
               const SizedBox(height: 20),
-
               Row(
                 children: [
                   Expanded(
@@ -467,14 +588,23 @@ class _ProfilState extends State<Profil> {
                         backgroundColor: Colors.pink,
                       ),
                       onPressed: () {
+                        userProvider.updateUserData({
+                          'nom': name.text,
+                          'email': email.text,
+                        });
                         Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Profil mis à jour!"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
                       },
                       child: const Text("Enregistrer"),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
             ],
           ),
@@ -483,7 +613,492 @@ class _ProfilState extends State<Profil> {
     );
   }
 
-  // -------------------- SMALL COMPONENTS --------------------
+  void _openMorphologyEditModal(BuildContext context, UserProvider userProvider) {
+    TextEditingController tailleController = TextEditingController(text: "${userProvider.userData['taille'] ?? 170}");
+    TextEditingController poidsController = TextEditingController(text: "${userProvider.userData['poids'] ?? 65}");
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Modifier les informations"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: tailleController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: "Taille (cm)"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: poidsController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: "Poids (kg)"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Annuler"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+              onPressed: () {
+                userProvider.updateTaillePoids(
+                  int.tryParse(tailleController.text) ?? 170,
+                  int.tryParse(poidsController.text) ?? 65,
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Informations mises à jour!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: const Text("Enregistrer"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddStyleDialog(BuildContext context, UserProvider userProvider) {
+    TextEditingController styleController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Ajouter un style"),
+          content: TextField(
+            controller: styleController,
+            decoration: const InputDecoration(
+              labelText: "Nouveau style",
+              hintText: "Ex: Vintage",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Annuler"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+              onPressed: () {
+                if (styleController.text.isNotEmpty) {
+                  final currentPreferences = List<String>.from(userProvider.userData['stylePreferences'] as List? ?? []);
+                  currentPreferences.add(styleController.text);
+                  userProvider.updateStylePreferences(currentPreferences);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Style ajouté!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              child: const Text("Ajouter"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showRecommendationDetails(BuildContext context, Map<String, dynamic> recommendation, UserProvider userProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(recommendation["title"]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  recommendation["image"],
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                recommendation["description"] ?? "Description non disponible",
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Compatibilité: ${recommendation["match"]}%",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pink,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Fermer"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+              onPressed: () {
+                userProvider.addToFavoris(recommendation["id"].toString());
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Look ajouté aux favoris!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: const Text("Ajouter aux favoris"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showHistorique(BuildContext context, UserProvider userProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Historique des essayages"),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 300,
+            child: userProvider.historiqueLooks.isEmpty
+                ? const Center(child: Text("Aucun essayage pour le moment"))
+                : ListView.builder(
+                    itemCount: userProvider.historiqueLooks.length,
+                    itemBuilder: (context, index) {
+                      final look = userProvider.historiqueLooks[index];
+                      return ListTile(
+                        leading: const Icon(Icons.history),
+                        title: Text(look["title"] ?? "Look ${index + 1}"),
+                        subtitle: Text(look["date"] ?? ""),
+                        trailing: const Icon(Icons.chevron_right),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Fermer"),
+            ),
+            if (userProvider.historiqueLooks.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  userProvider.clearHistorique();
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Historique effacé!"),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                child: const Text("Effacer"),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSettings(BuildContext context, AuthenticationProvider authProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Paramètres du compte"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.lock),
+                title: const Text("Changer le mot de passe"),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showChangePasswordDialog(context, authProvider);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.privacy_tip),
+                title: const Text("Confidentialité"),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showPrivacyDialog(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: const Text("Langue"),
+                trailing: const Text("Français"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showLanguageDialog(context);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Fermer"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context, AuthenticationProvider authProvider) {
+    TextEditingController currentPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
+    TextEditingController confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Changer le mot de passe"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: currentPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: "Mot de passe actuel"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: newPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: "Nouveau mot de passe"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: "Confirmer le mot de passe"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Annuler"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+              onPressed: () {
+                if (newPasswordController.text == confirmPasswordController.text) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Mot de passe mis à jour!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Les mots de passe ne correspondent pas!"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text("Mettre à jour"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPrivacyDialog(BuildContext context) {
+    bool publicProfile = false;
+    bool shareStats = true;
+    bool receiveRecommendations = true;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Paramètres de confidentialité"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CheckboxListTile(
+                    title: const Text("Profil public"),
+                    subtitle: const Text("Tout le monde peut voir votre profil"),
+                    value: publicProfile,
+                    onChanged: (value) {
+                      setState(() {
+                        publicProfile = value!;
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text("Partager les statistiques"),
+                    subtitle: const Text("Partager vos données d'utilisation anonymes"),
+                    value: shareStats,
+                    onChanged: (value) {
+                      setState(() {
+                        shareStats = value!;
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text("Recevoir des recommandations"),
+                    subtitle: const Text("Basées sur vos préférences"),
+                    value: receiveRecommendations,
+                    onChanged: (value) {
+                      setState(() {
+                        receiveRecommendations = value!;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Fermer"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Paramètres de confidentialité sauvegardés!"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                  child: const Text("Sauvegarder"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final List<String> languages = ['Français', 'English', 'Español', 'Deutsch', '中文'];
+    String selectedLanguage = 'Français';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Choisir la langue"),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: languages.length,
+                  itemBuilder: (context, index) {
+                    final language = languages[index];
+                    return RadioListTile<String>(
+                      title: Text(language),
+                      value: language,
+                      groupValue: selectedLanguage,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedLanguage = value!;
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Annuler"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Langue changée en $selectedLanguage!"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                  child: const Text("Appliquer"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showHelp(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Aide et support"),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                leading: Icon(Icons.help_outline),
+                title: Text("Centre d'aide"),
+                subtitle: Text("FAQ et tutoriels"),
+              ),
+              ListTile(
+                leading: Icon(Icons.contact_support),
+                title: Text("Contactez-nous"),
+                subtitle: Text("support@styleme.com"),
+              ),
+              ListTile(
+                leading: Icon(Icons.info_outline),
+                title: Text("À propos"),
+                subtitle: Text("Version 1.0.0"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Fermer"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _card({required Widget child}) {
     return Container(
@@ -504,7 +1119,7 @@ class _ProfilState extends State<Profil> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white24,
+        color: Colors.white.withOpacity(0.24),
         borderRadius: BorderRadius.circular(50),
       ),
       child: Icon(icon, color: Colors.white),
@@ -528,8 +1143,6 @@ class _ProfilState extends State<Profil> {
   }
 }
 
-// -------------------- STATIC COMPONENTS --------------------
-
 class _stat extends StatelessWidget {
   final IconData icon;
   final String value;
@@ -551,17 +1164,4 @@ class _stat extends StatelessWidget {
       ],
     );
   }
-}
-
-Widget _titleRow(String title, String action) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      Text(action, style: const TextStyle(color: Colors.pink, fontSize: 14)),
-    ],
-  );
 }

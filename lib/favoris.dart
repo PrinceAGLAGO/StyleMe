@@ -1,239 +1,292 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'providers/user_provider.dart';
+import 'providers/looks_provider.dart';
 
-class Favoris extends StatefulWidget {
+class Favoris extends StatelessWidget {
   const Favoris({super.key});
 
   @override
-  State<Favoris> createState() => _FavorisPageState();
-}
+  Widget build(BuildContext context) {
+    return Consumer2<UserProvider, LooksProvider>(
+      builder: (context, userProvider, looksProvider, child) {
+        final favorisIds = userProvider.favoris;
+        final favorisLooks = looksProvider.trendingLooks
+            .where((look) => favorisIds.contains(look["id"]))
+            .toList();
 
-class _FavorisPageState extends State<Favoris> {
-  String viewMode = "grid"; 
-  String activeTab = "collections"; 
-
-  bool showNewCollection = false;
-  final TextEditingController newCollectionController = TextEditingController();
-
-  List<Map<String, dynamic>> collections = [
-    {
-      "id": 1,
-      "name": "Soirée Chic",
-      "items": 12,
-      "thumbnail":
-          "https://images.unsplash.com/photo-1562182856-e39faab686d7?q=80",
-      "theme": "Élégant",
-    },
-    {
-      "id": 2,
-      "name": "Casual Weekend",
-      "items": 8,
-      "thumbnail":
-          "https://images.unsplash.com/photo-1651083018668-33a9dc339579?q=80",
-      "theme": "Décontracté",
-    },
-    {
-      "id": 3,
-      "name": "Bureau Pro",
-      "items": 15,
-      "thumbnail":
-          "https://images.unsplash.com/photo-1656504450814-398cf348c038?q=80",
-      "theme": "Professionnel",
-    },
-    {
-      "id": 4,
-      "name": "Summer Vibes",
-      "items": 10,
-      "thumbnail":
-          "https://images.unsplash.com/photo-1586024452802-86e0d084a4f9?q=80",
-      "theme": "Été",
-    },
-  ];
-
-  List<Map<String, dynamic>> savedItems = [
-    {
-      "id": 1,
-      "image":
-          "https://images.unsplash.com/photo-1656504450814-398cf348c038?q=80",
-      "title": "Look Urbain",
-      "brand": "Zara",
-    },
-    {
-      "id": 2,
-      "image":
-          "https://images.unsplash.com/photo-1632693217835-b482d9ca9ba0?q=80",
-      "title": "Street Style",
-      "brand": "H&M",
-    },
-    {
-      "id": 3,
-      "image": "https://images.unsplash.com/photo-1562182856-e39faab686d7?q=80",
-      "title": "Robe Élégante",
-      "brand": "Mango",
-    },
-    {
-      "id": 4,
-      "image":
-          "https://images.unsplash.com/photo-1651083018668-33a9dc339579?q=80",
-      "title": "Casual Chic",
-      "brand": "Pull&Bear",
-    },
-  ];
-
-  void createCollection() {
-    String name = newCollectionController.text.trim();
-    if (name.isNotEmpty) {
-      setState(() {
-        collections.add({
-          "id": collections.length + 1,
-          "name": name,
-          "items": 0,
-          "thumbnail":
-              "https://via.placeholder.com/300x300.png?text=Nouvelle+Collection",
-          "theme": "Personnalisé",
-        });
-        showNewCollection = false;
-        newCollectionController.clear();
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Collection \"$name\" créée !")));
-    }
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 120,
+                floating: false,
+                pinned: true,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: const Text(
+                    "Mes Favoris",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.purple, Colors.pink],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.black),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+              if (favorisLooks.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.favorite_border,
+                          size: 80,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          "Aucun favori",
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "Ajoutez des looks à vos favoris pour les retrouver ici",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: () {
+                            DefaultTabController.of(context)?.animateTo(0);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                          child: const Text(
+                            "Explorer les looks",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.75,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final look = favorisLooks[index];
+                        return _buildLookCard(context, look, userProvider, looksProvider);
+                      },
+                      childCount: favorisLooks.length,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-
-
-      body: Column(
+  Widget _buildLookCard(
+    BuildContext context,
+    Map<String, dynamic> look,
+    UserProvider userProvider,
+    LooksProvider looksProvider,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.only(
-              top: 50,
-              left: 16,
-              right: 16,
-              bottom: 20,
-            ),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.pink, Colors.purple],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-            child: Column(
+          Expanded(
+            flex: 3,
+            child: Stack(
               children: [
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Mes Favoris",
-                          style: TextStyle(color: Colors.white, fontSize: 25),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          "Votre garde-robe numérique",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ],
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: CachedNetworkImage(
+                    imageUrl: look["image"],
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: CircularProgressIndicator(color: Colors.orange),
+                      ),
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => setState(() => viewMode = "grid"),
-                          icon: Icon(
-                            Icons.grid_view,
-                            color: viewMode == "grid"
-                                ? Colors.white
-                                : Colors.white60,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => setState(() => viewMode = "list"),
-                          icon: Icon(
-                            Icons.view_list,
-                            color: viewMode == "list"
-                                ? Colors.white
-                                : Colors.white60,
-                          ),
-                        ),
-                      ],
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported, color: Colors.grey),
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-
-            
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => activeTab = "collections"),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: activeTab == "collections"
-                                ? Colors.white
-                                : Colors.white24,
-                            borderRadius: BorderRadius.circular(10),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () {
+                      userProvider.removeFromFavoris(look["id"]);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
-                          child: Center(
-                            child: Text(
-                              "Collections",
-                              style: TextStyle(
-                                color: activeTab == "collections"
-                                    ? Colors.pink
-                                    : Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.favorite,
+                        color: Colors.red,
+                        size: 18,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => activeTab = "items"),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: activeTab == "items"
-                                ? Colors.white
-                                : Colors.white24,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "Tous les articles",
-                              style: TextStyle(
-                                color: activeTab == "items"
-                                    ? Colors.pink
-                                    : Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      look["brand"],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
-
-
           Expanded(
+            flex: 2,
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: activeTab == "collections"
-                  ? buildCollections()
-                  : buildItems(),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        look["title"],
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        look["influencer"],
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.favorite, color: Colors.red, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${look["likes"]}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          _showLookOptions(context, look, userProvider);
+                        },
+                        child: Icon(
+                          Icons.more_vert,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -241,247 +294,62 @@ class _FavorisPageState extends State<Favoris> {
     );
   }
 
-
-  Widget buildCollections() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "${collections.length} Collections",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
-              onPressed: () {
-                setState(() => showNewCollection = true);
-                showCreateCollectionDialog();
-              },
-              icon: const Icon(Icons.add),
-              label: const Text("Nouvelle"),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-
-       
-        Expanded(
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: viewMode == "grid" ? 2 : 1,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: viewMode == "grid" ? 0.8 : 2.5,
-            ),
-            itemCount: collections.length,
-            itemBuilder: (context, index) {
-              final c = collections[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(15),
-                            ),
-                            child: CachedNetworkImage(
-                              imageUrl: c["thumbnail"],
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Positioned(
-                            right: 10,
-                            top: 10,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                "${c["items"]} articles",
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            c["name"],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Icon(Icons.share, color: Colors.grey.shade600),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      c["theme"],
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-
-  Widget buildItems() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "${savedItems.length} Articles sauvegardés",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: const [
-                Icon(Icons.create_new_folder, color: Colors.pink),
-                SizedBox(width: 5),
-                Text(
-                  "Ajouter à",
-                  style: TextStyle(color: Colors.pink, fontSize: 14),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        Expanded(
-          child: GridView.builder(
-            itemCount: savedItems.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: viewMode == "grid" ? 2 : 1,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: viewMode == "grid" ? 0.7 : 2.2,
-            ),
-            itemBuilder: (context, index) {
-              final item = savedItems[index];
-
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(15),
-                            ),
-                            child: CachedNetworkImage(
-                              imageUrl: item["image"],
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
-                          ),
-                          Positioned(
-                            right: 10,
-                            top: 10,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    savedItems.removeAt(index);
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        children: [
-                          Text(
-                            item["title"],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item["brand"],
-                            style: const TextStyle(
-                              color: Colors.pink,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-
-  void showCreateCollectionDialog() {
-    showDialog(
+  void _showLookOptions(
+    BuildContext context,
+    Map<String, dynamic> look,
+    UserProvider userProvider,
+  ) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Créer une collection"),
-        content: TextField(
-          controller: newCollectionController,
-          decoration: const InputDecoration(
-            hintText: "Nom de la collection...",
-          ),
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              createCollection();
-              Navigator.pop(context);
-            },
-            child: const Text("Créer"),
-          ),
-        ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.share, color: Colors.orange),
+                    title: const Text("Partager le look"),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.bookmark_border, color: Colors.orange),
+                    title: const Text("Ajouter à une collection"),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.delete_outline, color: Colors.red),
+                    title: const Text("Retirer des favoris"),
+                    onTap: () {
+                      userProvider.removeFromFavoris(look["id"]);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

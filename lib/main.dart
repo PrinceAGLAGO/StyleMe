@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart'; 
-import 'presentation.dart'; 
+import 'presentation.dart';
+import 'providers/authentication_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/looks_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,13 +20,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'StyleMe App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthenticationProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => LooksProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'StyleMe App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const Presentation(),
       ),
-      home: const Presentation(), 
     );
   }
 }
