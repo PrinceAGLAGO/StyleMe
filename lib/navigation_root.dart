@@ -5,14 +5,22 @@ import 'favoris.dart';
 import 'profil.dart';
 
 class NavigationRoot extends StatefulWidget {
-  const NavigationRoot({super.key});
+  final int initialIndex;
+  
+  const NavigationRoot({super.key, this.initialIndex = 0});
 
   @override
   State<NavigationRoot> createState() => _NavigationRootState();
 }
 
 class _NavigationRootState extends State<NavigationRoot> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   final List<Widget> _pages = const [
     Accueil(),

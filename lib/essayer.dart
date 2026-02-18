@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import 'providers/user_provider.dart';
 
 class Essayer extends StatefulWidget {
   const Essayer({super.key});
@@ -10,12 +13,14 @@ class Essayer extends StatefulWidget {
 }
 
 class _EssayerState extends State<Essayer> {
-  File? _userPhoto;
+  String? _userPhotoUrl;
   int? _selectedItem;
   Color _selectedColor = Colors.white;
   String _activeTab = 'clothes';
   final List<String> _savedLooks = [];
   final ImagePicker _picker = ImagePicker();
+  String? _selectedClothingName;
+  String? _selectedClothingCategory;
 
   final List<Map<String, dynamic>> clothingItems = [
     {
@@ -23,6 +28,7 @@ class _EssayerState extends State<Essayer> {
       'name': 'T-shirt Blanc',
       'category': 'Haut',
       'colors': [Colors.white, Colors.black, const Color(0xFFFF6B9D)],
+      'image': 'https://images.unsplash.com/photo-1521572163464-794f78e4c5e4',
     },
     {
       'id': 2,
@@ -33,6 +39,7 @@ class _EssayerState extends State<Essayer> {
         Colors.black,
         const Color(0xFF6B7280),
       ],
+      'image': 'https://images.unsplash.com/photo-1542272604-787c3835535d',
     },
     {
       'id': 3,
@@ -43,39 +50,113 @@ class _EssayerState extends State<Essayer> {
         const Color(0xFF8B4513),
         const Color(0xFF4B5563),
       ],
+      'image': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256',
     },
   ];
 
   final List<Map<String, dynamic>> accessories = [
-    {'id': 5, 'name': 'Chapeau', 'category': 'Accessoire'},
-    {'id': 6, 'name': 'Lunettes', 'category': 'Accessoire'},
-    {'id': 7, 'name': 'Collier', 'category': 'Accessoire'},
+    {
+      'id': 5, 
+      'name': 'Chapeau', 
+      'category': 'Accessoire',
+      'image': 'https://images.unsplash.com/photo-1521312208118-0ecbae4e3b6c',
+    },
+    {
+      'id': 6, 
+      'name': 'Lunettes', 
+      'category': 'Accessoire',
+      'image': 'https://images.unsplash.com/photo-1511499767150-a48a237f0078',
+    },
+    {
+      'id': 7, 
+      'name': 'Collier', 
+      'category': 'Accessoire',
+      'image': 'https://images.unsplash.com/photo-1599643478518-4e89a8dcf458',
+    },
   ];
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
       setState(() {
-        _userPhoto = File(image.path);
+        // Sur Flutter Web, on utilise une URL temporaire
+        if (kIsWeb) {
+          _userPhotoUrl = image.path;
+        } else {
+          _userPhotoUrl = image.path;
+        }
       });
     }
   }
 
   void _saveLook() {
-    if (_userPhoto != null) {
+    if (_userPhotoUrl != null) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      // Récupérer les informations de l'item sélectionné
+      Map<String, dynamic>? selectedItemData;
+      if (_selectedItem != null) {
+        selectedItemData = [...clothingItems, ...accessories]
+            .firstWhere((item) => item['id'] == _selectedItem);
+      }
+      
+      final lookData = {
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'title': 'Look du ${DateTime.now().day}/${DateTime.now().month}',
+        'date': DateTime.now().toString().split(' ')[0],
+        'userImage': _userPhotoUrl,
+        'clothingItem': selectedItemData,
+        'selectedColor': _selectedColor.value.toString(),
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      
+      userProvider.addToHistorique(lookData);
+      
       setState(() {
-        _savedLooks.add(_userPhoto!.path);
+        _savedLooks.add(_userPhotoUrl!);
       });
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Look sauvegardé dans vos favoris !')),
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('Look sauvegardé dans votre historique !'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: 'Voir',
+            textColor: Colors.white,
+            onPressed: () {
+              // Naviguer vers l'onglet Profil pour voir l'historique
+              _navigateToProfil();
+            },
+          ),
+        ),
       );
     }
   }
 
+  void _navigateToProfil() {
+    // Naviguer vers l'onglet Profil (index 3)
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const NavigationRoot(initialIndex: 3),
+      ),
+      (route) => false,
+    );
+  }
+
   void _resetTryOn() {
     setState(() {
-      _userPhoto = null;
+      _userPhotoUrl = null;
       _selectedItem = null;
+      _selectedClothingName = null;
+      _selectedClothingCategory = null;
+      _selectedColor = Colors.white;
     });
   }
 
@@ -86,7 +167,6 @@ class _EssayerState extends State<Essayer> {
       body: SafeArea(
         child: Column(
           children: [
-
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -119,14 +199,11 @@ class _EssayerState extends State<Essayer> {
                 ],
               ),
             ),
-
-          
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -141,7 +218,6 @@ class _EssayerState extends State<Essayer> {
                       ),
                       child: Column(
                         children: [
-
                           AspectRatio(
                             aspectRatio: 3 / 4,
                             child: Container(
@@ -158,7 +234,7 @@ class _EssayerState extends State<Essayer> {
                                   ],
                                 ),
                               ),
-                              child: _userPhoto != null
+                              child: _userPhotoUrl != null
                                   ? Stack(
                                       children: [
                                         ClipRRect(
@@ -166,13 +242,41 @@ class _EssayerState extends State<Essayer> {
                                               const BorderRadius.vertical(
                                                 top: Radius.circular(20),
                                               ),
-                                          child: Image.file(
-                                            _userPhoto!,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                          ),
+                                          child: _buildImage(_userPhotoUrl!),
                                         ),
+                                        if (_selectedItem != null && _selectedClothingName != null)
+                                          Positioned(
+                                            top: 20,
+                                            right: 20,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withOpacity(0.7),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    _selectedClothingName!,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    _selectedClothingCategory ?? '',
+                                                    style: const TextStyle(
+                                                      color: Colors.white70,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         if (_selectedItem != null)
                                           Positioned.fill(
                                             child: Center(
@@ -181,9 +285,18 @@ class _EssayerState extends State<Essayer> {
                                                 height: 180,
                                                 decoration: BoxDecoration(
                                                   color: _selectedColor
-                                                      .withOpacity(0.5),
+                                                      .withOpacity(0.3),
                                                   borderRadius:
                                                       BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: _selectedColor,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                child: Icon(
+                                                  Icons.check_circle_outline,
+                                                  color: _selectedColor,
+                                                  size: 40,
                                                 ),
                                               ),
                                             ),
@@ -221,13 +334,10 @@ class _EssayerState extends State<Essayer> {
                                     ),
                             ),
                           ),
-
-                      
                           Padding(
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
-
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () =>
@@ -250,7 +360,6 @@ class _EssayerState extends State<Essayer> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () =>
@@ -269,9 +378,8 @@ class _EssayerState extends State<Essayer> {
                                     label: const Text('Importer'),
                                   ),
                                 ),
-                                if (_userPhoto != null) ...[
+                                if (_userPhotoUrl != null) ...[
                                   const SizedBox(width: 8),
-
                                   SizedBox(
                                     width: 50,
                                     child: ElevatedButton(
@@ -299,10 +407,7 @@ class _EssayerState extends State<Essayer> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
-
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
@@ -311,7 +416,6 @@ class _EssayerState extends State<Essayer> {
                       padding: const EdgeInsets.all(4),
                       child: Row(
                         children: [
-
                           Expanded(
                             child: GestureDetector(
                               onTap: () =>
@@ -346,7 +450,6 @@ class _EssayerState extends State<Essayer> {
                               ),
                             ),
                           ),
-
                           Expanded(
                             child: GestureDetector(
                               onTap: () =>
@@ -384,17 +487,13 @@ class _EssayerState extends State<Essayer> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
-
                     _activeTab == 'clothes'
                         ? _buildClothingItems()
                         : _buildAccessories(),
-
                     const SizedBox(
                       height: 80,
-                    ), 
+                    ),
                   ],
                 ),
               ),
@@ -402,9 +501,7 @@ class _EssayerState extends State<Essayer> {
           ],
         ),
       ),
-
-    
-      bottomSheet: _userPhoto != null && _selectedItem != null
+      bottomSheet: _userPhotoUrl != null && _selectedItem != null
           ? Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -420,7 +517,6 @@ class _EssayerState extends State<Essayer> {
               child: SafeArea(
                 child: Row(
                   children: [
-
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: _saveLook,
@@ -437,7 +533,6 @@ class _EssayerState extends State<Essayer> {
                       ),
                     ),
                     const SizedBox(width: 12),
-
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
@@ -445,7 +540,9 @@ class _EssayerState extends State<Essayer> {
                       ),
                       child: IconButton(
                         onPressed: () {
-
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Fonctionnalité de partage bientôt disponible!")),
+                          );
                         },
                         icon: const Icon(Icons.share, color: Colors.grey),
                       ),
@@ -456,6 +553,65 @@ class _EssayerState extends State<Essayer> {
             )
           : null,
     );
+  }
+
+  Widget _buildImage(String imagePath) {
+    if (kIsWeb) {
+      // Pour Flutter Web, on utilise Image.network avec une URL data ou un fichier temporaire
+      if (imagePath.startsWith('http')) {
+        return Image.network(
+          imagePath,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error, color: Colors.red),
+                  SizedBox(height: 8),
+                  Text("Erreur de chargement", style: TextStyle(color: Colors.red)),
+                ],
+              ),
+            );
+          },
+        );
+      } else {
+        // Pour les fichiers locaux sur Web, on utilise une approche différente
+        return Image.asset(
+          'assets/placeholder.png', // Image placeholder
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Icon(Icons.image, size: 100, color: Colors.grey),
+            );
+          },
+        );
+      }
+    } else {
+      // Pour mobile/desktop
+      return Image.file(
+        File(imagePath),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error, color: Colors.red),
+                SizedBox(height: 8),
+                Text("Erreur de chargement", style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          );
+        },
+      );
+    }
   }
 
   Widget _buildClothingItems() {
@@ -475,12 +631,14 @@ class _EssayerState extends State<Essayer> {
           itemCount: clothingItems.length,
           itemBuilder: (context, index) {
             final item = clothingItems[index];
+            final isSelected = _selectedItem == item['id'];
+            
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: _selectedItem == item['id']
+                border: isSelected
                     ? Border.all(color: const Color(0xFFEC4899), width: 2)
                     : null,
                 boxShadow: [
@@ -498,101 +656,94 @@ class _EssayerState extends State<Essayer> {
                     setState(() {
                       _selectedItem = item['id'] as int;
                       _selectedColor = (item['colors'] as List<Color>).first;
+                      _selectedClothingName = item['name'];
+                      _selectedClothingCategory = item['category'];
                     });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['category'],
-                                  style: const TextStyle(
-                                    color: Color(0xFF6B7280),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item['name'],
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.straighten,
-                                  size: 16,
-                                  color: Color(0xFF9CA3AF),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'S',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        // Image du vêtement
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            item['image'],
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image, color: Colors.grey),
+                              );
+                            },
+                          ),
                         ),
-                        if (_selectedItem == item['id']) ...[
-                          const SizedBox(height: 12),
-                          
-                          Row(
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.palette_outlined,
-                                size: 16,
-                                color: Color(0xFF9CA3AF),
+                              Text(
+                                item['category'],
+                                style: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 12,
+                                ),
                               ),
-                              const SizedBox(width: 8),
-                              ...(item['colors'] as List<Color>).map((color) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedColor = color;
-                                    });
-                                  },
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    margin: const EdgeInsets.only(right: 8),
+                              const SizedBox(height: 4),
+                              Text(
+                                item['name'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.straighten,
+                                    size: 16,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: color,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: _selectedColor == color
-                                            ? const Color(0xFFEC4899)
-                                            : Colors.grey.shade300,
-                                        width: 2,
-                                      ),
+                                      color: Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Text(
+                                      'S',
+                                      style: TextStyle(fontSize: 12),
                                     ),
                                   ),
-                                );
-                              }).toList(),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
+                        ),
+                        if (isSelected)
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEC4899),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -622,12 +773,14 @@ class _EssayerState extends State<Essayer> {
           itemCount: accessories.length,
           itemBuilder: (context, index) {
             final item = accessories[index];
+            final isSelected = _selectedItem == item['id'];
+            
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: _selectedItem == item['id']
+                border: isSelected
                     ? Border.all(color: const Color(0xFFEC4899), width: 2)
                     : null,
                 boxShadow: [
@@ -644,29 +797,69 @@ class _EssayerState extends State<Essayer> {
                   onTap: () {
                     setState(() {
                       _selectedItem = item['id'] as int;
+                      _selectedClothingName = item['name'];
+                      _selectedClothingCategory = item['category'];
                     });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          item['category'],
-                          style: const TextStyle(
-                            color: Color(0xFF6B7280),
-                            fontSize: 12,
+                        // Image de l'accessoire
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            item['image'],
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image, color: Colors.grey),
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item['name'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['category'],
+                                style: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item['name'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        if (isSelected)
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEC4899),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -679,3 +872,6 @@ class _EssayerState extends State<Essayer> {
     );
   }
 }
+
+// Import pour NavigationRoot
+import 'navigation_root.dart';

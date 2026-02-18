@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'providers/user_provider.dart';
 import 'providers/looks_provider.dart';
+import 'navigation_root.dart';
 
 class Favoris extends StatelessWidget {
   const Favoris({super.key});
@@ -84,7 +85,8 @@ class Favoris extends StatelessWidget {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            DefaultTabController.of(context)?.animateTo(0);
+                            // Naviguer vers l'onglet Accueil
+                            _navigateToAccueil(context);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
@@ -129,6 +131,24 @@ class Favoris extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _navigateToAccueil(BuildContext context) {
+    // Trouver le NavigationRoot et changer d'onglet
+    final navigator = Navigator.of(context);
+    while (navigator.canPop()) {
+      navigator.pop();
+    }
+    
+    // Aller à l'onglet Accueil (index 0)
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const NavigationRoot(initialIndex: 0),
+        ),
+        (route) => false,
+      );
+    }
   }
 
   Widget _buildLookCard(
@@ -214,7 +234,7 @@ class Favoris extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      look["brand"],
+                      look["brand"] ?? "StyleMe",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -248,7 +268,7 @@ class Favoris extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        look["influencer"],
+                        look["influencer"] ?? "StyleMe",
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -264,7 +284,7 @@ class Favoris extends StatelessWidget {
                           const Icon(Icons.favorite, color: Colors.red, size: 14),
                           const SizedBox(width: 4),
                           Text(
-                            "${look["likes"]}",
+                            "${look["likes"] ?? 0}",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -328,6 +348,9 @@ class Favoris extends StatelessWidget {
                     title: const Text("Partager le look"),
                     onTap: () {
                       Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Fonctionnalité de partage bientôt disponible!")),
+                      );
                     },
                   ),
                   ListTile(
@@ -335,6 +358,9 @@ class Favoris extends StatelessWidget {
                     title: const Text("Ajouter à une collection"),
                     onTap: () {
                       Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Collections bientôt disponibles!")),
+                      );
                     },
                   ),
                   ListTile(
@@ -343,6 +369,9 @@ class Favoris extends StatelessWidget {
                     onTap: () {
                       userProvider.removeFromFavoris(look["id"]);
                       Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Look retiré des favoris")),
+                      );
                     },
                   ),
                 ],
