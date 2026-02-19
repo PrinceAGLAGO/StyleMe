@@ -155,7 +155,7 @@ class _ConnexionState extends State<Connexion> {
                     child: authProvider.isLoading
                         ? const CircularProgressIndicator()
                         : SizedBox(
-                            width: 200,
+                            width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
@@ -168,13 +168,13 @@ class _ConnexionState extends State<Connexion> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.orange,
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 80,
-                                  vertical: 14,
+                                  horizontal: 24,
+                                  vertical: 12,
                                 ),
                               ),
                               child: const Text(
                                 "Se connecter",
-                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ),
                           ),

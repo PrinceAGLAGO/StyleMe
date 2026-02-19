@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'providers/authentication_provider.dart';
 import 'providers/user_provider.dart';
 import 'connexion.dart';
@@ -98,25 +100,7 @@ class Profil extends StatelessWidget {
                           children: [
                             userData['photoUrl'] != null && userData['photoUrl'].toString().isNotEmpty
                                 ? ClipOval(
-                                    child: kIsWeb
-                                        ? Image.network(
-                                            userData['photoUrl'].toString(),
-                                            width: 60,
-                                            height: 60,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return const Text("👤", style: TextStyle(fontSize: 28));
-                                            },
-                                          )
-                                        : Image.network(
-                                            userData['photoUrl'].toString(),
-                                            width: 60,
-                                            height: 60,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return const Text("👤", style: TextStyle(fontSize: 28));
-                                            },
-                                          ),
+                                    child: _buildAvatarImage(userData['photoUrl'].toString()),
                                   )
                                 : const Text("👤", style: TextStyle(fontSize: 28)),
                             Positioned(
@@ -445,13 +429,45 @@ class Profil extends StatelessWidget {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     
     if (image != null) {
-      userProvider.setPhotoUrl(image.path);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Photo de profil mise à jour!"),
-          backgroundColor: Colors.green,
-        ),
-      );
+      try {
+        if (kIsWeb) {
+          // Vérifier le format
+          final fileName = image.name.toLowerCase();
+          final supportedFormats = ['.png', '.jpg', '.jpeg', '.webp'];
+          final isFormatSupported = supportedFormats.any((format) => fileName.endsWith(format));
+          
+          if (!isFormatSupported) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Format non supporté. Formats acceptés: PNG, JPG, JPEG, WEBP"),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+          
+          final bytes = await image.readAsBytes();
+          final base64String = base64Encode(bytes);
+          userProvider.setPhotoUrl(base64String);
+        } else {
+          userProvider.setPhotoUrl(image.path);
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Photo de profil mise à jour!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        print('Erreur lors du chargement de l\'image: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Erreur lors du chargement de l'image"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -704,7 +720,7 @@ class Profil extends StatelessWidget {
                                           height: 60,
                                           color: Colors.grey.shade200,
                                           child: look['userImage'] != null
-                                              ? _buildLookImage(look['userImage'])
+                                              ? _buildLookImage(look['userImage'], look['userImageBytes'])
                                               : const Icon(Icons.person, color: Colors.grey),
                                         ),
                                       ),
@@ -799,9 +815,59 @@ class Profil extends StatelessWidget {
     );
   }
 
-  Widget _buildLookImage(String imagePath) {
+  Widget _buildAvatarImage(String photoUrl) {
+  try {
+    if (kIsWeb && photoUrl.length > 100) {
+      // C'est probablement du base64
+      final bytes = base64Decode(photoUrl);
+      return Image.memory(
+        bytes,
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) {
+          print('Erreur avatar Image.memory: $error');
+          return const Text("👤", style: TextStyle(fontSize: 28));
+        },
+      );
+    } else {
+      // C'est probablement une URL
+      return Image.network(
+        photoUrl,
+        width: 60,
+        height: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Erreur avatar Image.network: $error');
+          return const Text("👤", style: TextStyle(fontSize: 28));
+        },
+      );
+    }
+  } catch (e) {
+    print('Exception avatar: $e');
+    return const Text("👤", style: TextStyle(fontSize: 28));
+  }
+}
+
+  Widget _buildLookImage(String imagePath, [String? imageBytesBase64]) {
     if (kIsWeb) {
-      if (imagePath.startsWith('http')) {
+      if (imageBytesBase64 != null && imageBytesBase64.isNotEmpty) {
+        try {
+          final bytes = base64Decode(imageBytesBase64);
+          return Image.memory(
+            bytes,
+            width: 60,
+            height: 60,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.error, color: Colors.red, size: 24);
+            },
+          );
+        } catch (e) {
+          return const Icon(Icons.image, color: Colors.grey, size: 24);
+        }
+      } else if (imagePath.startsWith('http')) {
         return Image.network(
           imagePath,
           width: 60,
@@ -812,15 +878,7 @@ class Profil extends StatelessWidget {
           },
         );
       } else {
-        return Image.network(
-          imagePath,
-          width: 60,
-          height: 60,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return const Icon(Icons.image, color: Colors.grey, size: 24);
-          },
-        );
+        return const Icon(Icons.image, color: Colors.grey, size: 24);
       }
     } else {
       return Image.file(
@@ -875,7 +933,7 @@ class Profil extends StatelessWidget {
                       width: 200,
                       height: 250,
                       color: Colors.grey.shade200,
-                      child: _buildLookImage(look['userImage']),
+                      child: _buildLookImage(look['userImage'], look['userImageBytes']),
                     ),
                   ),
                 const SizedBox(height: 16),

@@ -5,6 +5,9 @@ import 'dart:io';
 import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
 import 'navigation_root.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:universal_html/html.dart' as html;
 
 class Essayer extends StatefulWidget {
   const Essayer({super.key});
@@ -15,6 +18,8 @@ class Essayer extends StatefulWidget {
 
 class _EssayerState extends State<Essayer> {
   String? _userPhotoUrl;
+  Uint8List? _userPhotoBytes;
+  String? _webImageUrl; // URL pour l'affichage sur web
   int? _selectedItem;
   Color _selectedColor = Colors.white;
   String _activeTab = 'clothes';
@@ -40,7 +45,7 @@ class _EssayerState extends State<Essayer> {
         Colors.black,
         const Color(0xFF6B7280),
       ],
-      'image': 'https://images.unsplash.com/photo-1542272604-787c3835535d',
+      'image': 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246',
     },
     {
       'id': 3,
@@ -52,6 +57,17 @@ class _EssayerState extends State<Essayer> {
         const Color(0xFF4B5563),
       ],
       'image': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256',
+    },
+    {
+      'id': 4,
+      'name': 'Robe Élégante',
+      'category': 'Robe',
+      'colors': [
+        const Color(0xFFEC4899),
+        Colors.black,
+        const Color(0xFF3B82F6),
+      ],
+      'image': 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1',
     },
   ];
 
@@ -79,13 +95,45 @@ class _EssayerState extends State<Essayer> {
   Future<void> _pickImage(ImageSource source) async {
     final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
-      setState(() {
-        if (kIsWeb) {
-          _userPhotoUrl = image.path;
-        } else {
-          _userPhotoUrl = image.path;
+      try {
+        // Vérifier le format de l'image
+        final fileName = image.name.toLowerCase();
+        final supportedFormats = ['.png', '.jpg', '.jpeg', '.webp'];
+        final isFormatSupported = supportedFormats.any((format) => fileName.endsWith(format));
+        
+        if (!isFormatSupported) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Format non supporté. Formats acceptés: PNG, JPG, JPEG, WEBP"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
         }
-      });
+
+        if (kIsWeb) {
+          final bytes = await image.readAsBytes();
+          final blob = html.Blob([bytes]);
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          setState(() {
+            _userPhotoBytes = bytes;
+            _webImageUrl = url;
+            _userPhotoUrl = image.name;
+          });
+        } else {
+          setState(() {
+            _userPhotoUrl = image.path;
+          });
+        }
+      } catch (e) {
+        print('Erreur lors du chargement de l\'image: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Erreur lors du chargement de l'image"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -104,6 +152,7 @@ class _EssayerState extends State<Essayer> {
         'title': 'Look du ${DateTime.now().day}/${DateTime.now().month}',
         'date': DateTime.now().toString().split(' ')[0],
         'userImage': _userPhotoUrl,
+        'userImageBytes': kIsWeb ? base64Encode(_userPhotoBytes!) : null,
         'clothingItem': selectedItemData,
         'selectedColor': _selectedColor.value.toString(),
         'timestamp': DateTime.now().toIso8601String(),
@@ -150,6 +199,8 @@ class _EssayerState extends State<Essayer> {
   void _resetTryOn() {
     setState(() {
       _userPhotoUrl = null;
+      _userPhotoBytes = null;
+      _webImageUrl = null;
       _selectedItem = null;
       _selectedClothingName = null;
       _selectedClothingCategory = null;
@@ -538,10 +589,25 @@ class _EssayerState extends State<Essayer> {
                       child: IconButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Fonctionnalité de partage bientôt disponible!")),
+                            const SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(Icons.info, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      "Formats supportés: PNG, JPG, JPEG, WEBP\nSVG non supporté pour l'instant",
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: Colors.blue,
+                              duration: Duration(seconds: 4),
+                            ),
                           );
                         },
-                        icon: const Icon(Icons.share, color: Colors.grey),
+                        icon: const Icon(Icons.info_outline, color: Colors.grey),
                       ),
                     ),
                   ],
@@ -554,43 +620,60 @@ class _EssayerState extends State<Essayer> {
 
   Widget _buildImage(String imagePath) {
     if (kIsWeb) {
-      if (imagePath.startsWith('http')) {
+      // Priorité à l'URL blob créée avec universal_html
+      if (_webImageUrl != null) {
         return Image.network(
-          imagePath,
+          _webImageUrl!,
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error, color: Colors.red),
-                  SizedBox(height: 8),
-                  Text("Erreur de chargement", style: TextStyle(color: Colors.red)),
-                ],
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    : null,
               ),
             );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            print('Erreur Image.network avec blob: $error');
+            // Fallback vers Image.memory
+            return _tryMemoryImage();
+          },
+        );
+      } else if (_userPhotoUrl != null && _userPhotoUrl!.isNotEmpty) {
+        return Image.network(
+          _userPhotoUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            print('Erreur Image.network direct: $error');
+            return _tryMemoryImage();
           },
         );
       } else {
-        return Image.network(
-          imagePath,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.image, size: 100, color: Colors.grey),
-                  SizedBox(height: 8),
-                  Text("Image web", style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            );
-          },
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.image, size: 100, color: Colors.grey),
+              SizedBox(height: 8),
+              Text("Image non disponible", style: TextStyle(color: Colors.grey)),
+            ],
+          ),
         );
       }
     } else {
@@ -600,6 +683,7 @@ class _EssayerState extends State<Essayer> {
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) {
+          print('Erreur Image.file: $error');
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -611,6 +695,41 @@ class _EssayerState extends State<Essayer> {
             ),
           );
         },
+      );
+    }
+  }
+
+  Widget _tryMemoryImage() {
+    if (_userPhotoBytes != null) {
+      return Image.memory(
+        _userPhotoBytes!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          print('Erreur Image.memory fallback: $error');
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error, color: Colors.red),
+                SizedBox(height: 8),
+                Text("Format d'image non supporté", style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          );
+        },
+      );
+    } else {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error, color: Colors.red),
+            SizedBox(height: 8),
+            Text("Impossible de charger l'image", style: TextStyle(color: Colors.red)),
+          ],
+        ),
       );
     }
   }
@@ -664,86 +783,136 @@ class _EssayerState extends State<Essayer> {
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            item['image'],
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
+                        Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                item['image'],
                                 width: 80,
                                 height: 80,
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.image, color: Colors.grey),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item['category'],
-                                style: const TextStyle(
-                                  color: Color(0xFF6B7280),
-                                  fontSize: 12,
-                                ),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 80,
+                                    height: 80,
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.image, color: Colors.grey),
+                                  );
+                                },
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item['name'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(
-                                    Icons.straighten,
-                                    size: 16,
-                                    color: Color(0xFF9CA3AF),
+                                  Text(
+                                    item['category'],
+                                    style: const TextStyle(
+                                      color: Color(0xFF6B7280),
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item['name'],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade100,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Text(
-                                      'S',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.straighten,
+                                        size: 16,
+                                        color: Color(0xFF9CA3AF),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade100,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Text(
+                                          'S',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            if (isSelected)
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEC4899),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                          ],
                         ),
-                        if (isSelected)
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEC4899),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 20,
+                        if (isSelected) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Choisissez une couleur:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: (item['colors'] as List<Color>).map((color) {
+                              final isSelectedColor = _selectedColor == color;
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedColor = color;
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: isSelectedColor
+                                        ? Border.all(
+                                            color: Colors.black,
+                                            width: 2,
+                                          )
+                                        : null,
+                                  ),
+                                  child: isSelectedColor
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 16,
+                                        )
+                                      : null,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                       ],
                     ),
                   ),
