@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
+import 'navigation_root.dart';
 
 class Essayer extends StatefulWidget {
   const Essayer({super.key});
@@ -79,7 +80,6 @@ class _EssayerState extends State<Essayer> {
     final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
       setState(() {
-        // Sur Flutter Web, on utilise une URL temporaire
         if (kIsWeb) {
           _userPhotoUrl = image.path;
         } else {
@@ -93,7 +93,6 @@ class _EssayerState extends State<Essayer> {
     if (_userPhotoUrl != null) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       
-      // Récupérer les informations de l'item sélectionné
       Map<String, dynamic>? selectedItemData;
       if (_selectedItem != null) {
         selectedItemData = [...clothingItems, ...accessories]
@@ -131,7 +130,6 @@ class _EssayerState extends State<Essayer> {
             label: 'Voir',
             textColor: Colors.white,
             onPressed: () {
-              // Naviguer vers l'onglet Profil pour voir l'historique
               _navigateToProfil();
             },
           ),
@@ -141,7 +139,6 @@ class _EssayerState extends State<Essayer> {
   }
 
   void _navigateToProfil() {
-    // Naviguer vers l'onglet Profil (index 3)
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (context) => const NavigationRoot(initialIndex: 3),
@@ -557,7 +554,6 @@ class _EssayerState extends State<Essayer> {
 
   Widget _buildImage(String imagePath) {
     if (kIsWeb) {
-      // Pour Flutter Web, on utilise Image.network avec une URL data ou un fichier temporaire
       if (imagePath.startsWith('http')) {
         return Image.network(
           imagePath,
@@ -578,21 +574,26 @@ class _EssayerState extends State<Essayer> {
           },
         );
       } else {
-        // Pour les fichiers locaux sur Web, on utilise une approche différente
-        return Image.asset(
-          'assets/placeholder.png', // Image placeholder
+        return Image.network(
+          imagePath,
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
           errorBuilder: (context, error, stackTrace) {
             return const Center(
-              child: Icon(Icons.image, size: 100, color: Colors.grey),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.image, size: 100, color: Colors.grey),
+                  SizedBox(height: 8),
+                  Text("Image web", style: TextStyle(color: Colors.grey)),
+                ],
+              ),
             );
           },
         );
       }
     } else {
-      // Pour mobile/desktop
       return Image.file(
         File(imagePath),
         fit: BoxFit.cover,
@@ -665,7 +666,6 @@ class _EssayerState extends State<Essayer> {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        // Image du vêtement
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
@@ -806,7 +806,6 @@ class _EssayerState extends State<Essayer> {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        // Image de l'accessoire
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
@@ -872,6 +871,3 @@ class _EssayerState extends State<Essayer> {
     );
   }
 }
-
-// Import pour NavigationRoot
-import 'navigation_root.dart';
